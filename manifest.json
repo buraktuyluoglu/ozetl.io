@@ -1,0 +1,28 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube Video Summary",
+    "version": "1.0",
+    "description": "Watch summaries of YouTube videos powered by AI.",
+    "permissions": ["activeTab", "scripting", "storage"],
+    "host_permissions": [
+        "https://localhost:5000/*"
+    ],
+    "action": {
+      "default_icon": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      }
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://www.youtube.com/watch*"],
+        "js": ["content.js"],
+        "css": ["content.css"]
+      }
+    ],
+    "background": {
+      "service_worker": "background.js"
+    }
+  }
+  
