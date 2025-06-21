@@ -28,10 +28,10 @@ async function fetchData(url, body) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getTranscript') {
-        fetchData('https://localhost:5000/get_transcript', { video_url: request.video_url })
+        fetchData('http://localhost:5000/get_transcript', { video_url: request.video_url })
             .then(sendResponse);
     } else if (request.action === 'getSummary') {
-        fetchData('https://localhost:5000/summarize', { video_url: request.video_url })
+        fetchData('http://localhost:5000/summarize', { video_url: request.video_url })
             .then(sendResponse);
     }
     

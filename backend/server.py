@@ -83,7 +83,6 @@ def summarize():
     return jsonify({'summary': summary})
 
 if __name__ == '__main__':
-    print("Backend sunucusu GÜVENLİ (HTTPS) modda başlatılıyor...")
+    print("Backend sunucusu HTTP modda başlatılıyor...")
     print("API anahtarının backend/.env dosyasında GEMINI_API_KEY olarak ayarlandığından emin olun.")
-    # 'adhoc' parametresi, Flask'ın otomatik olarak geçici bir SSL sertifikası oluşturmasını sağlar.
-    app.run(port=5000, debug=True, ssl_context='adhoc') 
+    app.run(host='localhost', port=5000, debug=True) 
