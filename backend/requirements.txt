@@ -1,6 +1,6 @@
 Flask
 youtube-transcript-api
-google-generativeai
+openai
 python-dotenv
 flask-cors
 cryptography 

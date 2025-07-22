@@ -1,19 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from youtube_transcript_api import YouTubeTranscriptApi
-import google.generativeai as genai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
 # .env dosyasındaki ortam değişkenlerini yükle
 load_dotenv()
 
-# Gemini API'yi yapılandır
-api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
-else:
-    print("Uyarı: GEMINI_API_KEY bulunamadı. Lütfen backend/.env dosyasını kontrol edin.")
+# OpenAI istemcisini başlat
+# API anahtarı OPENAI_API_KEY ortam değişkeninden otomatik olarak okunur
+client = OpenAI()
 
 app = Flask(__name__)
 CORS(app)
@@ -56,25 +53,28 @@ def summarize():
     if not video_id:
         return jsonify({'error': 'Geçersiz YouTube URL'}), 400
     
-    if not api_key:
-        return jsonify({'error': 'Gemini API anahtarı sunucuda ayarlanmamış.'}), 500
+    if not os.getenv("OPENAI_API_KEY"):
+        return jsonify({'error': 'OpenAI API anahtarı sunucuda ayarlanmamış.'}), 500
 
     try:
         # Transkripti al
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['tr', 'en'])
         transcript = " ".join([d['text'] for d in transcript_list])
 
-        # Gemini'nin token limitini aşmamak için transkripti kırp
+        # OpenAI'nin token limitini aşmamak için transkripti kırp
         max_chars = 15000
         if len(transcript) > max_chars:
             transcript = transcript[:max_chars]
 
-        # Gemini ile özetle
-        model = genai.GenerativeModel('gemini-pro')
-        prompt = f"Şu YouTube transkriptini akıcı bir dille özetle ve videonun ana fikrini anlat:\n\nTRANSKRIPT:\n{transcript}"
-        
-        response = model.generate_content(prompt)
-        summary = response.text
+        # OpenAI ile özetle
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": f"Şu YouTube transkriptini akıcı bir dille özetle ve videonun ana fikrini anlat:\n\nTRANSKRIPT:\n{transcript}"}
+            ]
+        )
+        summary = response.choices[0].message.content.strip()
 
     except Exception as e:
         print(f"Hata: {e}")
@@ -84,5 +84,5 @@ def summarize():
 
 if __name__ == '__main__':
     print("Backend sunucusu HTTP modda başlatılıyor...")
-    print("API anahtarının backend/.env dosyasında GEMINI_API_KEY olarak ayarlandığından emin olun.")
+    print("API anahtarının backend/.env dosyasında OPENAI_API_KEY olarak ayarlandığından emin olun.")
     app.run(host='localhost', port=5000, debug=True) 
