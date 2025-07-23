@@ -123,11 +123,21 @@
         };
 
         const getSummary = () => {
+            if(!summaryContent) return; // Panel kaldırılmış olabilir
+            summaryContent.innerHTML = '<div class="ozet-loader"></div>';
+
             chrome.runtime.sendMessage({ action: 'getSummary', video_url: videoUrl }, (response) => {
                 if(!summaryContent) return; // Panel kaldırılmış olabilir
                 summaryContent.innerHTML = '';
                 if (response.error) {
-                    summaryContent.textContent = `Hata: ${response.error}`;
+                    if (response.error === 'API_KEY_MISSING') {
+                         summaryContent.innerHTML = `
+                            <p>Özetleme özelliği için bir OpenAI API anahtarı gerekli.</p>
+                            <p>Lütfen eklenti ikonuna tıklayarak ayarlar menüsünden anahtarınızı girin.</p>
+                        `;
+                    } else {
+                        summaryContent.textContent = `Hata: ${response.error}`;
+                    }
                 } else {
                     const p = document.createElement('p');
                     p.textContent = response.summary;
