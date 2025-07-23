@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ayarlar</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Ayarlar</h1>
+        <div class="form-group">
+            <label for="api-key">OpenAI API Anahtarı</label>
+            <input type="password" id="api-key" placeholder="sk-...">
+            <p class="description">
+                API anahtarınız sadece bu tarayıcıda saklanır ve kimseyle paylaşılmaz.
+            </p>
+        </div>
+        <button id="save-button">Kaydet</button>
+        <p id="status-message"></p>
+        <div class="divider"></div>
+        <div class="page-actions">
+            <button id="toggle-panel-button" class="secondary-button">Video Panelini Göster/Gizle</button>
+            <p class="description">
+                Mevcut YouTube video sayfasındaki asistan panelini gösterir veya gizler.
+            </p>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html> 
