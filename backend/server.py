@@ -5,12 +5,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-# .env dosyasındaki ortam değişkenlerini yükle
+# .env dosyasını hala yerel geliştirme için kullanabilirsiniz ama öncelik istekten gelen anahtar olacak
 load_dotenv()
-
-# OpenAI istemcisini başlat
-# API anahtarı OPENAI_API_KEY ortam değişkeninden otomatik olarak okunur
-client = OpenAI()
 
 app = Flask(__name__)
 CORS(app)
@@ -53,10 +49,16 @@ def summarize():
     if not video_id:
         return jsonify({'error': 'Geçersiz YouTube URL'}), 400
     
-    if not os.getenv("OPENAI_API_KEY"):
-        return jsonify({'error': 'OpenAI API anahtarı sunucuda ayarlanmamış.'}), 500
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'API anahtarı eksik veya geçersiz.'}), 401
+        
+    api_key = auth_header.split(' ')[1]
 
     try:
+        # Her istek için yeni bir OpenAI istemcisi oluştur ve anahtarı ata
+        client = OpenAI(api_key=api_key)
+
         # Transkripti al
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['tr', 'en'])
         transcript = " ".join([d['text'] for d in transcript_list])
@@ -77,12 +79,16 @@ def summarize():
         summary = response.choices[0].message.content.strip()
 
     except Exception as e:
+        # Hata mesajını daha anlaşılır hale getir
+        error_message = str(e)
+        if "Incorrect API key" in error_message:
+            return jsonify({'error': 'Geçersiz OpenAI API anahtarı.'}), 401
+        
         print(f"Hata: {e}")
-        return jsonify({'error': f'Transkript alınamadı veya özetlenemedi: {str(e)}'}), 500
+        return jsonify({'error': f'Transkript alınamadı veya özetlenemedi: {error_message}'}), 500
     
     return jsonify({'summary': summary})
 
 if __name__ == '__main__':
     print("Backend sunucusu HTTP modda başlatılıyor...")
-    print("API anahtarının backend/.env dosyasında OPENAI_API_KEY olarak ayarlandığından emin olun.")
     app.run(host='localhost', port=5000, debug=True) 
