@@ -63,10 +63,6 @@ def summarize():
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['tr', 'en'])
         transcript = " ".join([d['text'] for d in transcript_list])
 
-        # OpenAI'nin token limitini aşmamak için transkripti kırp
-        max_chars = 15000
-        if len(transcript) > max_chars:
-            transcript = transcript[:max_chars]
 
         # OpenAI ile özetle
         response = client.chat.completions.create(
